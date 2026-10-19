@@ -613,6 +613,10 @@ ifeq ($(DUAL_IMAGE_SUPPORT),y)
 CPPFLAGS += -DDUAL_IMAGE_SUPPORT
 endif
 
+ifeq ($(AB_SLOT_BOOT),y)
+CPPFLAGS += -DAB_SLOT_BOOT
+endif
+
 ifeq ($(PDMA_OLD),y)
 CPPFLAGS += -DPDMA_OLD
 endif

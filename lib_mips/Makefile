@@ -35,6 +35,10 @@ COBJS	+= ddr_init.o
 endif
 endif
 
+ifeq ($(AB_SLOT_BOOT), y)
+COBJS	+= ab_slot.o
+endif
+
 OBJS	= $(AOBJS) $(COBJS)
 
 $(LIB):	.depend $(OBJS)

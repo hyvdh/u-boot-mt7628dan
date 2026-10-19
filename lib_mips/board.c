@@ -32,6 +32,9 @@
 #include <rt_mmap.h>
 #include <spi_api.h>
 #include <nand_api.h>
+#ifdef AB_SLOT_BOOT
+#include <ab_slot.h>
+#endif
 
 DECLARE_GLOBAL_DATA_PTR;
 #undef DEBUG
@@ -1993,7 +1996,12 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	putc ('\n');
 	if(BootType == '3') {
 		char *argv[2];
+#ifdef AB_SLOT_BOOT
+		/* A/B 槽位启动: 选择槽位(含超限自动回退)并记录启动尝试 */
+		sprintf(addr_str, "0x%X", ab_slot_kernel_addr());
+#else
 		sprintf(addr_str, "0x%X", CFG_KERN_ADDR);
+#endif
 		argv[1] = &addr_str[0];
 		printf("   \n3: System Boot system code via Flash.\n");
 		do_bootm(cmdtp, 0, 2, argv);

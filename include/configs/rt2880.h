@@ -344,6 +344,20 @@ extern unsigned int  CFG_BLOCKSIZE;
 #endif
 #endif
 
+/*
+ * A/B slot boot configuration (AB_SLOT_BOOT)
+ *   槽位A: flash 0x50000 (与 CFG_KERN_ADDR 单镜像布局一致)
+ *   槽位B: flash 0x450000 (沿用 Ralink 双镜像 Image2 布局, 8MB flash)
+ */
+#if defined(AB_SLOT_BOOT) && defined(DUAL_IMAGE_SUPPORT)
+#error "AB_SLOT_BOOT conflicts with DUAL_IMAGE_SUPPORT"
+#endif
+#ifdef AB_SLOT_BOOT
+#define AB_SLOT_A_ADDR		CFG_KERN_ADDR
+#define AB_SLOT_B_ADDR		(CFG_FLASH_BASE + 0x450000)
+#define AB_MAX_TRY_TIMES	3
+#endif
+
 #define CFG_ENV_SECT_SIZE	CFG_CONFIG_SIZE
 #define CFG_ENV_SIZE		0x1000
 

@@ -66,6 +66,73 @@ curl -F uboot=@./uboot.bin -F press="Update U-Boot" 192.168.1.111 > /dev/null
 curl -F firmware=@./openwrt.bin -F press="Update firmware" 192.168.1.111 > /dev/null
 ```
 
+## A/B 双槽启动
+
+本工程内置 A/B 槽位启动选择（`AB_SLOT_BOOT`，默认已启用），8MB flash 布局：
+
+| 槽位 | flash 偏移 | 说明 |
+|---|---|---|
+| A | 0x50000 | 与单镜像布局一致 |
+| B | 0x450000 | 备用槽位 |
+
+**机制**：每次启动未确认槽位的 `slot_x_try` 计数 +1；连续 3 次未获 Linux 确认
+（固件起不来没人清计数）→ U-Boot 自动切回另一槽位（旧固件回退，免人工干预）。
+已确认槽位不计数、不写 env（避免 flash 磨损）。
+
+**env 协议**（Linux 侧用 `fw_setenv` 操作）：
+
+| 变量 | 含义 |
+|---|---|
+| `boot_slot` | 当前活动槽位 A/B（缺省 A） |
+| `slot_a_stable` / `slot_b_stable` | 槽位已确认可正常启动（1=是） |
+| `slot_a_try` / `slot_b_try` | 未确认状态启动尝试次数 |
+
+**升级流程**（以切到 B 槽为例，OpenWrt 侧）：
+
+```bash
+mtd write 新固件 <槽B的mtd分区>
+fw_setenv boot_slot B
+fw_setenv slot_b_stable 0
+fw_setenv slot_b_try 0
+reboot
+# 新固件验证正常后执行确认:
+fw_setenv slot_b_stable 1
+fw_setenv slot_b_try 0
+```
+
+**U-Boot 控制台命令**：
+
+```
+abslot          # 显示两槽位状态
+abslot A|B      # 手动切换活动槽位
+```
+
+### 开启 / 关闭 A/B 功能（调试用）
+
+A/B 功能由宏 `AB_SLOT_BOOT` 整体控制（menuconfig 项 "A/B Slot Boot"，config.in:1511）。
+**关闭后 `ab_slot.c` / `cmd_abslot.c` 完全不参与编译**（无 abslot 命令、无协议代码），
+启动行为与未引入该功能前完全一致，产物体积逐字节还原。
+
+**推荐方式：切换预设**（免改文件，两套固件随时对照烧写）
+
+```bash
+./loadcfg.sh mt7628dan_64MB_noab   # 关闭 A/B（调试对照版）→ uboot.bin 110,376 字节
+./loadcfg.sh                        # 默认预设（A/B 开启）→ uboot.bin 112,272 字节
+```
+
+**手动方式：改预设两行**（`configs/mt7628dan_64MB/`，改完 `./loadcfg.sh` 生效）
+
+| 文件 | 开启 | 关闭 |
+|---|---|---|
+| `config` | `AB_SLOT_BOOT=y` | `# AB_SLOT_BOOT is not set` |
+| `autoconf.h` | `#define AB_SLOT_BOOT 1` | `#undef  AB_SLOT_BOOT` |
+
+> 两种状态产物仅差 1.9KB（即 A/B 模块本体）；`AB_SLOT_BOOT` 与
+> `DUAL_IMAGE_SUPPORT` 互斥（rt2880.h 中有 `#error` 保护，同时开启会编译报错）。
+
+> 注意：Web 救砖上传的固件固定写入槽 A（0x50000）；救砖后如需从槽 A 启动，
+> 用控制台 `setenv boot_slot A; saveenv` 或 `abslot A` 切换。
+
 ## 工程定制要点
 
 - `configs/` 配置预设系统 + `loadcfg.sh` 一键编译（免 menuconfig、免手工配工具链路径）

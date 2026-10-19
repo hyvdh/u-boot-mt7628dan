@@ -1508,6 +1508,8 @@ fi
 
 bool "Dual Image" DUAL_IMAGE_SUPPORT
 
+bool "A/B Slot Boot" AB_SLOT_BOOT
+
 bool "Partition LAN/WAN" LAN_WAN_PARTITION
 if [ "$LAN_WAN_PARTITION" = "y" ]; then
  choice 'LAN/WAN Board Layout' "W/LLLL RALINK_DEMO_BOARD_PVLAN \

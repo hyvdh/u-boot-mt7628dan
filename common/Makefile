@@ -41,6 +41,10 @@ ifeq ($(RALINK_UPGRADE_BY_SERIAL),ON)
 COBJS += cmd_load.o
 endif
 
+ifeq ($(AB_SLOT_BOOT), y)
+COBJS += cmd_abslot.o
+endif
+
 ifeq ($(RALINK_USB),ON)
 COBJS += usb.o usb_storage.o cmd_usb.o cmd_fat.o
 endif
