@@ -1,0 +1,26 @@
+# ===== 编译产物与中间文件（一律不提交） =====
+*.o
+*.a
+*.bak
+*.bin
+*.img
+*~
+*.depend
+.config.old
+u-boot
+u-boot.map
+u-boot.srec
+u-boot.dis
+System.map
+tools/mkimage
+scripts/lxdialog/lxdialog
+.menuconfig.log
+.tmp_config
+/httpd/fsdata.c
+
+# ===== 工具链：只提交 tarball，解压树不提交 =====
+toolchains/buildroot-gcc342/
+
+# ===== 其他 =====
+/doc
+.git.bak/
