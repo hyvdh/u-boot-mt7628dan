@@ -1955,7 +1955,8 @@ void board_init_r (gd_t *id, ulong dest_addr)
 	    s = getenv ("bootdelay");
 	    timer1 = s ? (int)simple_strtol(s, NULL, 10) : CONFIG_BOOTDELAY;
 	}
-/*web failsafe*/
+/*web failsafe - disabled for cleaner boot*/
+#if 0
 	gpio_init();
 	led_off();
 	printf( "\nif you press the WPS button will automatically enter the Update mode\n");
@@ -1975,19 +1976,26 @@ void board_init_r (gd_t *id, ulong dest_addr)
 		eth_initialize(gd->bd);
 		NetLoopHttpd();
 	}
+#endif
 /*failsafe end!*/
-	OperationSelect();   
+	OperationSelect();
+
+	/* discard stale RX bytes (power-on line glitches) before countdown */
+	while (tstc())
+		(void)getc();
+
 	while (timer1 > 0) {
 		--timer1;
 		/* delay 100 * 10ms */
 		for (i=0; i<100; ++i) {
 			if ((my_tmp = tstc()) != 0) {	/* we got a key press	*/
-				timer1 = 0;	/* no more delay	*/
 				BootType = getc();
-				if ((BootType < '0' || BootType > '6') && (BootType != '7') && (BootType != '8') && (BootType != '9'))
-					BootType = '3';
-				printf("\n\rYou choosed %c\n\n", BootType);
-				break;
+				if ((BootType >= '0' && BootType <= '6') || (BootType == '7') || (BootType == '8') || (BootType == '9')) {
+					timer1 = 0;	/* valid selection: stop countdown */
+					printf("\n\rYou choosed %c\n\n", BootType);
+					break;
+				}
+				/* invalid key (noise/enter): ignore, keep waiting */
 			}
 			udelay (10000);
 		}

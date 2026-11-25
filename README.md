@@ -73,11 +73,16 @@ curl -F firmware=@./openwrt.bin -F press="Update firmware" 192.168.1.111 > /dev/
 | 槽位 | flash 偏移 | 说明 |
 |---|---|---|
 | A | 0x50000 | 与单镜像布局一致 |
-| B | 0x450000 | 备用槽位 |
+| B | 0x4A0000 | 备用槽位（4.3MB 槽布局，与 OpenWrt AB DTS 对齐） |
 
 **机制**：每次启动未确认槽位的 `slot_x_try` 计数 +1；连续 3 次未获 Linux 确认
 （固件起不来没人清计数）→ U-Boot 自动切回另一槽位（旧固件回退，免人工干预）。
 已确认槽位不计数、不写 env（避免 flash 磨损）。
+
+**槽位通知内核**：启动时把 `ab_slot=A` 或 `ab_slot=B` 注入 `bootargs`（每次覆盖、
+不落盘），Linux 侧内核（需 `MIPS_CMDLINE_DTB_EXTEND`，见 OpenWrt
+`files-4.14/arch/mips/ralink/of.c`）据此选择对应槽内的 rootfs 分区，免疫双槽
+mtd 序号漂移（对端槽缺失/损坏时序号前移）。
 
 **env 协议**（Linux 侧用 `fw_setenv` 操作）：
 
@@ -118,6 +123,7 @@ A/B 功能由宏 `AB_SLOT_BOOT` 整体控制（menuconfig 项 "A/B Slot Boot"，
 ```bash
 ./loadcfg.sh mt7628dan_64MB_noab   # 关闭 A/B（调试对照版）→ uboot.bin 110,376 字节
 ./loadcfg.sh                        # 默认预设（A/B 开启）→ uboot.bin 112,272 字节
+./loadcfg.sh mt7628nn_128MB_ab     # 厂商板 128MB DDR2 + 16MB flash + A/B → uboot.bin 112,156 字节
 ```
 
 **手动方式：改预设两行**（`configs/mt7628dan_64MB/`，改完 `./loadcfg.sh` 生效）

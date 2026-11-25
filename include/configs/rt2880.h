@@ -94,7 +94,7 @@ extern unsigned int  CFG_BLOCKSIZE;
 
 #define CONFIG_BOOTDELAY	2	/* autoboot after 2 seconds	*/
 
-#define CONFIG_BAUDRATE		115200
+#define CONFIG_BAUDRATE		57600
 
 #define CONFIG_SERVERIP 192.168.1.100
 #define CONFIG_IPADDR   192.168.1.111
@@ -104,7 +104,7 @@ extern unsigned int  CFG_BLOCKSIZE;
 
 //#define	CONFIG_TIMESTAMP		/* Print image info with timestamp */
 
-#undef	CONFIG_BOOTARGS
+#define CONFIG_BOOTARGS	"rootfstype=squashfs,jffs2"
 
 #define CONFIG_BOOTCOMMAND	"tftp" //"run flash_self"
 
@@ -347,14 +347,14 @@ extern unsigned int  CFG_BLOCKSIZE;
 /*
  * A/B slot boot configuration (AB_SLOT_BOOT)
  *   槽位A: flash 0x50000 (与 CFG_KERN_ADDR 单镜像布局一致)
- *   槽位B: flash 0x450000 (沿用 Ralink 双镜像 Image2 布局, 8MB flash)
+ *   槽位B: flash 0x4A0000 (4.3MB 槽布局, 与 OpenWrt AB DTS 对齐)
  */
 #if defined(AB_SLOT_BOOT) && defined(DUAL_IMAGE_SUPPORT)
 #error "AB_SLOT_BOOT conflicts with DUAL_IMAGE_SUPPORT"
 #endif
 #ifdef AB_SLOT_BOOT
 #define AB_SLOT_A_ADDR		CFG_KERN_ADDR
-#define AB_SLOT_B_ADDR		(CFG_FLASH_BASE + 0x450000)
+#define AB_SLOT_B_ADDR		(CFG_FLASH_BASE + 0x4A0000)
 #define AB_MAX_TRY_TIMES	3
 #endif
 

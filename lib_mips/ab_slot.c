@@ -119,6 +119,16 @@ ulong ab_slot_kernel_addr(void)
 		saveenv();
 	}
 
+	/* 注入槽位标识到 bootargs(仅本次启动内存值, 每次覆盖不累积):
+	 * 内核按 ab_slot= 选择对应槽位内的 rootfs 分区作为根文件系统,
+	 * 见 OpenWrt 侧 patches-4.14/0016-mtd-rootfs-select-by-ab-slot.patch */
+	{
+		char bootargs[16];
+
+		sprintf(bootargs, "ab_slot=%c", slot);
+		setenv("bootargs", bootargs);
+	}
+
 	return (slot == AB_SLOT_ID_A) ? AB_SLOT_A_ADDR : AB_SLOT_B_ADDR;
 }
 

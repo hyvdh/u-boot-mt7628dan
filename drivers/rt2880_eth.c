@@ -1808,6 +1808,10 @@ void mt7628_ephy_init(void)
 	mii_mgr_write(0, 28, 0x0233);
 	mii_mgr_write(0, 29, 0x000a);
 	mii_mgr_write(0, 30, 0x0000);
+	/* Fix EPHY idle state abnormal behavior */
+	mii_mgr_write(0, 31, 0x4000); //change G4 page
+	mii_mgr_write(0, 29, 0x000d);
+	mii_mgr_write(0, 30, 0x0500);
 
 }
 
@@ -2134,10 +2138,10 @@ void rt305x_esw_init(void)
 #elif defined (MT7628_ASIC_BOARD)
 /*TODO: Init MT7628 ASIC PHY HERE*/
 	i = RALINK_REG(RT2880_AGPIOCFG_REG);
-	i = i & ~(MT7628_EPHY0_EN);
+	i = i & ~(MT7628_EPHY_EN);
 	RALINK_REG(RT2880_AGPIOCFG_REG) = i;
 
-	printf("RESET MT7628 PHY!!!!!! ONLY 0\n\r");
+	printf("RESET MT7628 PHY!!!!!!\n\r");
 	// reset phy
 	i = RALINK_REG(RT2880_RSTCTRL_REG);
 	i = i | RSTCTRL_EPHY_RST;
